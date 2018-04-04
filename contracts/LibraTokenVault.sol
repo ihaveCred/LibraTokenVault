@@ -172,8 +172,6 @@ contract LibraTokenVault is Ownable {
 
     function claimTeamReserve() onlyTeamReserve locked public {
 
-        address teamReserveWallet = msg.sender;
-
         uint256 vestingStage = teamVestingStage();
 
         //Amount of tokens the team should have at this vesting stage
