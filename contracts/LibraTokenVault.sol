@@ -25,8 +25,8 @@ contract LibraTokenVault is Ownable {
     uint256 totalAllocation = 5 * (10 ** 8);
 
 
-    uint256 teamTimeLock = 365 days;
-    uint256 teamVestingStages = 4;
+    uint256 teamTimeLock = 2 * 365 days;
+    uint256 teamVestingStages = 8;
     uint256 firstReserveTimeLock = 2 * 365 days;
     uint256 secondReserveTimeLock = 3 * 365 days;
     
