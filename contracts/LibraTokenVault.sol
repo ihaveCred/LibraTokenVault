@@ -9,9 +9,6 @@ contract LibraTokenVault is Ownable {
     using SafeMath for uint256;
 
     //Wallet Addresses for allocation
-    // address teamReserveWallet = 0x0;
-    // address firstReserveWallet = 0x1;
-    // address secondReserveWallet = 0x2;
     address teamReserveWallet = 0x3ECCAAF69d6B691589703756Ae216dE43BD5E4f1;
     address firstReserveWallet = 0x74F42e96651142FB8Ebb718882A3C25971dEcdb1;
     address secondReserveWallet = 0xE70806B993597e499A151B150D6F1824BDDFd61C;
@@ -198,14 +195,19 @@ contract LibraTokenVault is Ownable {
 
         uint256 stage = (block.timestamp.sub(lockedAt)).div(vestingMonths);
 
+        //Ensures team vesting stage doesn't go past teamVestingStages
+        if(stage > teamVestingStages){
+            stage = teamVestingStages;
+        }
+
         return stage;
 
     }
 
-    // Checks if msg.sender still has locked tokens
-    function isStillLocked() public view onlyReserveWallets returns(bool) {
+    // Checks if msg.sender can collect tokens
+    function canCollect() public view onlyReserveWallets returns(bool) {
 
-        return block.timestamp > timeLocks[msg.sender];
+        return block.timestamp > timeLocks[msg.sender] && claimed[msg.sender] == 0;
 
     }
 
