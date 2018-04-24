@@ -181,7 +181,7 @@ contract('LibraTokenVault', function([_, owner, accounts]) {
             });
 
             it('cannot check if still locked tokens before allocation', async function () {
-                await this.vault.isStillLocked({from: firstReserveWallet}).should.be.rejected;
+                await this.vault.canCollect({from: firstReserveWallet}).should.be.rejected;
             });
 
             it('can call locked balance after allocation', async function () {
@@ -201,7 +201,7 @@ contract('LibraTokenVault', function([_, owner, accounts]) {
                 vaultTokenBalance.toNumber(10).should.equal(vaultSupply);
                 await this.vault.allocate( {from: owner} ).should.be.fulfilled;
 
-                const lockedBool = await this.vault.isStillLocked({from: firstReserveWallet});
+                const lockedBool = await this.vault.canCollect({from: firstReserveWallet});
                 lockedBool.should.equal(false);
             });
             
