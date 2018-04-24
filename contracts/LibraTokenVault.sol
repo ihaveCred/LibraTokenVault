@@ -8,17 +8,17 @@ import "zeppelin-solidity/contracts/math/SafeMath.sol";
 contract LibraTokenVault is Ownable {
     using SafeMath for uint256;
 
-    //Wallet Addresses for allocation
+    // Wallet addresses for allocation. ADDRESSES NOT FINALIZED
     address teamReserveWallet = 0x3ECCAAF69d6B691589703756Ae216dE43BD5E4f1;
     address firstReserveWallet = 0x74F42e96651142FB8Ebb718882A3C25971dEcdb1;
     address secondReserveWallet = 0xE70806B993597e499A151B150D6F1824BDDFd61C;
 
-    //Token Allocations
+    // Token Allocations
     uint256 teamReserveAllocation = 2 * (10 ** 8);
     uint256 firstReserveAllocation = 15 * (10 ** 7);
     uint256 secondReserveAllocation = 15 * (10 ** 7);
 
-    //Total Token Allocations
+    // Total Token Allocations
     uint256 totalAllocation = 5 * (10 ** 8);
 
 
@@ -28,29 +28,29 @@ contract LibraTokenVault is Ownable {
     uint256 secondReserveTimeLock = 3 * 365 days;
     
 
-    /** Reserve allocations */
+    // Reserve allocations
     mapping(address => uint256) public allocations;
 
-    /** When timeLocks are over (UNIX Timestamp)  */  
+    // When timeLocks are over (UNIX Timestamp)
     mapping(address => uint256) public timeLocks;
 
-    /** How many tokens each reserve wallet has claimed */
+    // How many tokens each reserve wallet has claimed
     mapping(address => uint256) public claimed;
 
-    /** When this vault was locked (UNIX Timestamp)*/
+    // When this vault was locked (UNIX Timestamp)
     uint256 public lockedAt = 0;
 
     LibraToken public token;
 
-    /** Allocated reserve tokens */
+    // Allocated reserve tokens
     event Allocated(address wallet, uint256 value);
 
-    /** Distributed reserved tokens */
+    // Distributed reserved tokens
     event Distributed(address wallet, uint256 value);
 
     event Locked();
 
-    //Only the addresses with allocations
+    // Only the addresses with allocations
     modifier onlyTokenReserve {
         require(msg.sender == firstReserveWallet || msg.sender == secondReserveWallet);
         require(allocations[msg.sender] > 0);
@@ -68,7 +68,7 @@ contract LibraTokenVault is Ownable {
         _;
     }
 
-    //Has not been locked yet
+    // Has not been locked yet
     modifier notLocked {
         require(lockedAt == 0);
         _;
@@ -79,7 +79,7 @@ contract LibraTokenVault is Ownable {
         _;
     }
 
-    //Token allocations have not been set
+    // Token allocations have not been set
     modifier notAllocated {
         require(allocations[teamReserveWallet] == 0);
         require(allocations[firstReserveWallet] == 0);
@@ -97,7 +97,7 @@ contract LibraTokenVault is Ownable {
 
     function allocate() public notLocked notAllocated onlyOwner {
 
-        //Makes sure Token Contract has the exact number of tokens
+        // Makes sure Token Contract has the exact number of tokens
         require(token.balanceOf(address(this)) == totalAllocation);
         
         allocations[teamReserveWallet] = teamReserveAllocation;
@@ -111,7 +111,7 @@ contract LibraTokenVault is Ownable {
         lock();
     }
 
-    //Lock the vault for the three wallets
+    // Lock the vault for the three wallets
     function lock() internal notLocked onlyOwner {
 
         lockedAt = block.timestamp;
@@ -124,8 +124,8 @@ contract LibraTokenVault is Ownable {
     }
 
     
-    //In the case locking failed, then allow the owner to reclaim the tokens on the contract.
-    //Recover Tokens in case incorrect amount was sent to contract.
+    // In the case locking failed, then allow the owner to reclaim the tokens on the contract.
+    // Recover Tokens in case incorrect amount was sent to contract.
     function recoverFailedLock() external notLocked notAllocated onlyOwner {
 
         // Transfer all tokens on this contract back to the owner
@@ -147,7 +147,7 @@ contract LibraTokenVault is Ownable {
 
     }
 
-    //Claim tokens
+    // Claim tokens
     function claimTokenReserve() onlyTokenReserve locked public {
 
         address reserveWallet = msg.sender;
@@ -171,12 +171,12 @@ contract LibraTokenVault is Ownable {
 
         uint256 vestingStage = teamVestingStage();
 
-        //Amount of tokens the team should have at this vesting stage
+        // Amount of tokens the team should have at this vesting stage
         uint256 totalUnlocked = vestingStage.mul(allocations[teamReserveWallet]).div(teamVestingStages);
 
         require(totalUnlocked <= allocations[teamReserveWallet]);
 
-        //Previously claimed tokens must be less than what is unlocked
+        // Previously claimed tokens must be less than what is unlocked
         require(claimed[teamReserveWallet] < totalUnlocked);
 
         uint256 payment = totalUnlocked.sub(claimed[teamReserveWallet]);
@@ -195,7 +195,7 @@ contract LibraTokenVault is Ownable {
 
         uint256 stage = (block.timestamp.sub(lockedAt)).div(vestingMonths);
 
-        //Ensures team vesting stage doesn't go past teamVestingStages
+        // Ensures team vesting stage doesn't go past teamVestingStages
         if(stage > teamVestingStages){
             stage = teamVestingStages;
         }
